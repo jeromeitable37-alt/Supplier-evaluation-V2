@@ -1,4 +1,5 @@
--- Run in the NEW Supabase project's SQL Editor (not the existing Asy fam project).
+-- Installed on Supplier Evaluation V2 project urleehfogorsoliloqkn, Singapore.
+-- Never run against the existing Asy fam project.
 -- Uses the service role only; no public table access or user-created policies.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -32,8 +33,8 @@ alter table public.evaluation_requests enable row level security;
 
 -- The browser never queries tables directly. Admin auth & data access use
 -- server-side Cloudflare Worker with a service role key and explicit checks.
-revoke all on table public.admin_users from anon, authenticated;
-revoke all on table public.evaluation_requests from anon, authenticated;
+revoke all on table public.admin_users from public, anon, authenticated;
+revoke all on table public.evaluation_requests from public, anon, authenticated;
 grant select, insert, update on table public.admin_users to service_role;
 grant select, insert, update on table public.evaluation_requests to service_role;
 
@@ -42,3 +43,11 @@ grant select, insert, update on table public.evaluation_requests to service_role
 -- insert into public.admin_users (user_id)
 -- select id from auth.users where lower(email) = lower('YOU@EXAMPLE.COM')
 -- on conflict (user_id) do nothing;
+
+-- Keep newly created public schema objects private by default.
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from public;
