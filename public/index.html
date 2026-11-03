@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Supplier Evaluation | Admin</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="top"><div class="brand"><span class="mark">SE</span><div><small>NEW PROJECT</small><h1>Supplier Evaluation</h1></div></div><span class="pill">Cloudflare + Supabase + Resend</span></div>
+    <p class="subtitle">Secure evaluation requests with one verified sender, Gmail Reply-To, and recipients on different email domains.</p>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <section class="panel" id="loginSection">
+      <h2>Admin sign-in</h2><p class="muted">Use a confirmed Supabase Auth account listed in <code>admin_users</code>.</p>
+      <form id="loginForm" class="form-grid">
+        <label>Email<input id="email" type="email" autocomplete="username" required /></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+    </section>
+    <div id="appSection" hidden>
+      <div class="right"><button id="logout" type="button" class="ghost">Sign out</button></div>
+      <section class="panel">
+        <h2>Create evaluation request</h2>
+        <p class="muted">Create the request first, then send the evaluation link through Resend.</p>
+        <form id="createForm" class="form-grid">
+          <label>Purchase Order number<input id="poNumber" maxlength="80" placeholder="PO-12345" required /></label>
+          <label>Supplier name<input id="supplierName" maxlength="160" required /></label>
+          <label>Evaluator name<input id="evaluatorName" maxlength="120" required /></label>
+          <label>Evaluator email<input id="evaluatorEmail" type="email" placeholder="name@sgen.edu.ph" required /></label>
+          <button class="primary" type="submit">Create request</button>
+        </form>
+      </section>
+      <section class="panel">
+        <div class="section-title"><div><h2>Evaluation requests</h2><p class="muted">Sending is only available for pending requests.</p></div><button class="ghost" id="refresh" type="button">Refresh</button></div>
+        <div id="requests" class="request-list"></div>
+      </section>
+    </div>
+    <p class="footer">This is a starter project. Email sending requires a verified Resend domain. Files and PO image storage are not connected yet.</p>
+  </main>
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>
