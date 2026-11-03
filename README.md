@@ -1,6 +1,15 @@
-# New Supplier Evaluation — Cloudflare + Supabase + Resend
+# Supplier Evaluation V2 — Cloudflare + Supabase + Resend
 
 **Separate starter project.** Does not modify the original Vercel/Firebase Supplier Evaluation System or the existing "Asy fam" Supabase project.
+
+## Current setup status — November 3, 2026
+
+- ✅ **New Supabase database created** in Singapore: [Supplier Evaluation V2](https://supabase.com/dashboard/project/urleehfogorsoliloqkn), project ref `urleehfogorsoliloqkn`, on the separate Supabase account.
+- ✅ `admin_users` and `evaluation_requests` tables created; RLS enabled; direct `anon` / `authenticated` table grants revoked; security verified.
+- ✅ GitHub source code configured to use only the new Supabase project. The **public** project URL and publishable key are in `wrangler.jsonc`; the service-role/secret key is **not** in GitHub.
+- ⏳ No Supabase Auth admin user exists yet. Create and verify one in Authentication → Users, then explicitly authorize that user.
+- ⏳ No Cloudflare Worker has been deployed or linked, and no Resend verified sending domain/API key is configured. Sending emails is **not live**.
+- ✅ The previous `Asy fam` database and original Vercel system are unchanged.
 
 ## Included
 
@@ -20,11 +29,11 @@ You **cannot** use `@gmail.com` as the verified From address in production. You 
 
 Resend's free tier currently provides 3,000 transactional emails/month and 100/day. **No service guarantees Inbox**; recipient spam policies still apply.
 
-## 1. Create a NEW Supabase project
+## 1. Create and authorize your admin sign-in
 
-Select the Supabase organization where you want the new project. **Do not reuse `Asy fam`.** Create a project, open SQL Editor, run `supabase/schema.sql`.
+The separate Supabase project **already exists**, and the database schema is **already installed**. Do **not** re-run the setup SQL or use `Asy fam`. [Open the new project's Authentication → Users](https://supabase.com/dashboard/project/urleehfogorsoliloqkn/auth/users).
 
-In Authentication → Users, create a user account for yourself and confirm it. Then in SQL Editor execute:
+Create or invite your own email/password admin user and confirm the email. Once the account appears in Authentication → Users, authorize **that exact account** through the new project's SQL Editor by running:
 
 ```sql
 insert into public.admin_users (user_id)
@@ -73,29 +82,29 @@ Required environment variables:
 
 **Never use a `NEXT_PUBLIC_` prefix for secret values.** `/api/config` intentionally exposes only your Supabase URL + publishable key.
 
-## 4. Deploy on Cloudflare Workers
+## 4. Connect GitHub and deploy to Cloudflare Workers
 
-Connect/login to your own Cloudflare account. From the project folder:
+You must sign in to a Cloudflare account. This repository cannot deploy itself without that account's authorization.
 
-```bash
-npx wrangler login
-npm run deploy
+1. Open [Cloudflare Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages), choose **Create application**, select **GitHub**, and authorize the connected repository **`jeromeitable37-alt/Supplier-evaluation-V2`**.
+2. Choose **Workers** (not Pages). Keep the Worker name **`supplier-evaluation-v2`** to match `wrangler.jsonc`. Root directory is the repository root; the deploy command is **`npx wrangler deploy`**.
+3. Complete the Git integration. It should deploy on pushes to `main`. A build may be created before secrets are set, but **email sending cannot work** until the remaining configuration is finished.
+4. In **Worker → Settings → Variables and Secrets**, add these **encrypted secrets**. Do not put their values in source code, GitHub, or screenshots:
+
+```
+SUPABASE_SERVICE_ROLE_KEY   # Supabase project's server-only legacy service_role key
+EVALUATION_TOKEN_SECRET    # Generate a random 32+ character secret
+RESEND_API_KEY             # Resend API key
+RESEND_FROM_EMAIL          # Example: Supplier Evaluation <evaluation@your-verified-domain.com>
+RESEND_REPLY_TO_EMAIL      # Your chosen Gmail reply address
+APP_BASE_URL               # Your Worker HTTPS URL, e.g. https://supplier-evaluation-v2.yoursubdomain.workers.dev
 ```
 
-Then set every required secret. The command will prompt you to paste the value without storing it in code:
+The non-secret `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are **already configured** in `wrangler.jsonc` for this new project.
 
-```bash
-npx wrangler secret put SUPABASE_URL
-npx wrangler secret put SUPABASE_PUBLISHABLE_KEY
-npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-npx wrangler secret put EVALUATION_TOKEN_SECRET
-npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put RESEND_FROM_EMAIL
-npx wrangler secret put RESEND_REPLY_TO_EMAIL
-npx wrangler secret put APP_BASE_URL
-```
+Alternatively, from a local checkout with Wrangler authenticated, use `npm run deploy` and `npx wrangler secret put NAME` for each listed secret. Never publish a service-role key or Resend key.
 
-Set `APP_BASE_URL` to the final Cloudflare Worker HTTPS URL after the first deploy. Changing Worker secrets publishes a new version. Open `/api/health` to check that database/email variables are present (this does **not** verify they are valid).
+Set `APP_BASE_URL` to the final Cloudflare Worker HTTPS URL. Open `/api/health` to check that variables are present (this does **not** verify that Resend's domain is verified or that email delivery works).
 
 ## 5. Test
 
