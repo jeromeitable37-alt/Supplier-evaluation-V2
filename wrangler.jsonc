@@ -1,11 +1,17 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "supplier-evaluation-resend-new",
+  "name": "supplier-evaluation-v2",
   "main": "src/worker.js",
   "compatibility_date": "2026-11-03",
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "vars": {
+    "SUPABASE_URL": "https://urleehfogorsoliloqkn.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_5mlBGwIMEzVK74k3fysmhw_QRbIVZ1-"
   }
 }
